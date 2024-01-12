@@ -29,7 +29,7 @@ fn vendor_simple() {
 
     Package::new("log", "0.3.5").publish();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     let lock = p.read_file("vendor/log/Cargo.toml");
     assert!(lock.contains("version = \"0.3.5\""));
 
@@ -56,7 +56,7 @@ fn vendor_sample_config() {
 
     Package::new("log", "0.3.5").publish();
 
-    p.cargo("vendor --respect-source-config")
+    p.cargo("vendor --respect-source-config --merge-sources")
         .with_stdout(
             r#"[source.crates-io]
 replace-with = "vendored-sources"
@@ -88,7 +88,7 @@ fn vendor_sample_config_alt_registry() {
 
     Package::new("log", "0.3.5").alternative(true).publish();
 
-    p.cargo("vendor --respect-source-config")
+    p.cargo("vendor --respect-source-config --merge-sources")
         .with_stdout(format!(
             r#"[source."{0}"]
 registry = "{0}"
@@ -128,7 +128,7 @@ fn vendor_path_specified() {
     };
 
     let output = p
-        .cargo("vendor --respect-source-config")
+        .cargo("vendor --respect-source-config --merge-sources")
         .arg(path)
         .exec_with_output()
         .unwrap();
@@ -195,7 +195,7 @@ fn package_exclude() {
         .file(".dotdir/include", "")
         .publish();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     let csum = p.read_file("vendor/bar/.cargo-checksum.json");
     assert!(csum.contains(".include"));
     assert!(!csum.contains(".exclude"));
@@ -238,7 +238,7 @@ fn two_versions() {
     Package::new("bitflags", "0.7.0").publish();
     Package::new("bitflags", "0.8.0").publish();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
 
     let lock = p.read_file("vendor/bitflags/Cargo.toml");
     assert!(lock.contains("version = \"0.8.0\""));
@@ -282,7 +282,7 @@ fn two_explicit_versions() {
     Package::new("bitflags", "0.7.0").publish();
     Package::new("bitflags", "0.8.0").publish();
 
-    p.cargo("vendor --respect-source-config --versioned-dirs")
+    p.cargo("vendor --respect-source-config --versioned-dirs --merge-sources")
         .run();
 
     let lock = p.read_file("vendor/bitflags-0.8.0/Cargo.toml");
@@ -320,7 +320,7 @@ fn update_versions() {
     Package::new("bitflags", "0.7.0").publish();
     Package::new("bitflags", "0.8.0").publish();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
 
     let lock = p.read_file("vendor/bitflags/Cargo.toml");
     assert!(lock.contains("version = \"0.7.0\""));
@@ -336,7 +336,7 @@ fn update_versions() {
             bitflags = "0.8.0"
         "#,
     );
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
 
     let lock = p.read_file("vendor/bitflags/Cargo.toml");
     assert!(lock.contains("version = \"0.8.0\""));
@@ -433,7 +433,7 @@ fn test_sync_argument() {
     Package::new("bitflags", "0.7.0").publish();
     Package::new("bitflags", "0.8.0").publish();
 
-    p.cargo("vendor --respect-source-config --manifest-path foo/Cargo.toml -s bar/Cargo.toml baz/Cargo.toml test_vendor")
+    p.cargo("vendor --respect-source-config --merge-sources --manifest-path foo/Cargo.toml -s bar/Cargo.toml baz/Cargo.toml test_vendor")
         .with_stderr("\
 error: unexpected argument 'test_vendor' found
 
@@ -444,7 +444,7 @@ For more information, try '--help'.",
         .with_status(1)
         .run();
 
-    p.cargo("vendor --respect-source-config --manifest-path foo/Cargo.toml -s bar/Cargo.toml -s baz/Cargo.toml test_vendor")
+    p.cargo("vendor --respect-source-config --merge-sources --manifest-path foo/Cargo.toml -s bar/Cargo.toml -s baz/Cargo.toml test_vendor")
         .run();
 
     let lock = p.read_file("test_vendor/bitflags/Cargo.toml");
@@ -473,7 +473,7 @@ fn delete_old_crates() {
     Package::new("bitflags", "0.7.0").publish();
     Package::new("log", "0.3.5").publish();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     p.read_file("vendor/bitflags/Cargo.toml");
 
     p.change_file(
@@ -488,7 +488,7 @@ fn delete_old_crates() {
         "#,
     );
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     let lock = p.read_file("vendor/log/Cargo.toml");
     assert!(lock.contains("version = \"0.3.5\""));
     assert!(!p.root().join("vendor/bitflags/Cargo.toml").exists());
@@ -519,7 +519,7 @@ fn ignore_files() {
         .file("foo.rej", "")
         .publish();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     let csum = p.read_file("vendor/url/.cargo-checksum.json");
     assert!(!csum.contains("foo.orig"));
     assert!(!csum.contains(".gitignore"));
@@ -555,7 +555,7 @@ fn included_files_only() {
         .file("src/lib.rs", "")
         .build();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     let csum = p.read_file("vendor/a/.cargo-checksum.json");
     assert!(!csum.contains("a/b.md"));
 }
@@ -596,7 +596,7 @@ fn dependent_crates_in_crates() {
         .file("src/lib.rs", "")
         .build();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     p.read_file("vendor/a/.cargo-checksum.json");
     p.read_file("vendor/b/.cargo-checksum.json");
 }
@@ -637,7 +637,7 @@ fn vendoring_git_crates() {
         .publish();
     Package::new("serde_derive", "0.5.0").publish();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     p.read_file("vendor/serde_derive/src/wut.rs");
 
     add_vendor_config(&p);
@@ -669,7 +669,7 @@ fn git_simple() {
         .file("src/lib.rs", "")
         .build();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     let csum = p.read_file("vendor/a/.cargo-checksum.json");
     assert!(csum.contains("\"package\":null"));
 }
@@ -709,7 +709,7 @@ fn git_diff_rev() {
         .file("src/lib.rs", "")
         .build();
 
-    p.cargo("vendor --respect-source-config")
+    p.cargo("vendor --respect-source-config --merge-sources")
         .with_stdout(
             r#"[source."git+file://[..]/git?rev=v0.1.0"]
 git = [..]
@@ -768,7 +768,7 @@ fn git_duplicate() {
         .build();
     Package::new("b", "0.5.0").publish();
 
-    p.cargo("vendor --respect-source-config")
+    p.cargo("vendor --respect-source-config --merge-sources")
         .with_stderr(
             "\
 [UPDATING] [..]
@@ -847,7 +847,7 @@ fn git_complex() {
         .build();
 
     let output = p
-        .cargo("vendor --respect-source-config")
+        .cargo("vendor --respect-source-config --merge-sources")
         .exec_with_output()
         .unwrap();
     let output = String::from_utf8(output.stdout).unwrap();
@@ -880,7 +880,7 @@ fn depend_on_vendor_dir_not_deleted() {
 
     Package::new("libc", "0.2.30").publish();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     assert!(p.root().join("vendor/libc").is_dir());
 
     p.change_file(
@@ -898,7 +898,7 @@ fn depend_on_vendor_dir_not_deleted() {
         "#,
     );
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     assert!(p.root().join("vendor/libc").is_dir());
 }
 
@@ -919,14 +919,14 @@ fn ignore_hidden() {
         )
         .file("src/lib.rs", "")
         .build();
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     // Add a `.git` directory.
     let repo = git::init(&p.root().join("vendor"));
     git::add(&repo);
     git::commit(&repo);
     assert!(p.root().join("vendor/.git").exists());
     // Vendor again, shouldn't change anything.
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     // .git should not be removed.
     assert!(p.root().join("vendor/.git").exists());
     // And just for good measure, make sure no files changed.
@@ -969,7 +969,7 @@ fn config_instructions_works() {
         .file("src/lib.rs", "")
         .build();
     let output = p
-        .cargo("vendor --respect-source-config")
+        .cargo("vendor --respect-source-config --merge-sources")
         .exec_with_output()
         .unwrap();
     let output = String::from_utf8(output.stdout).unwrap();
@@ -1019,7 +1019,7 @@ fn git_crlf_preservation() {
     )
     .unwrap();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     let output = p.read_file("vendor/a/src/lib.rs");
     assert_eq!(input, output);
 }
@@ -1049,7 +1049,7 @@ fn vendor_preserves_permissions() {
         .file("src/lib.rs", "")
         .build();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
 
     let umask = cargo::util::get_umask();
     let metadata = fs::metadata(p.root().join("vendor/bar/src/lib.rs")).unwrap();
@@ -1130,7 +1130,7 @@ fn vendor_crate_with_ws_inherit() {
         .file("src/lib.rs", "")
         .build();
 
-    p.cargo("vendor --respect-source-config").run();
+    p.cargo("vendor --respect-source-config --merge-sources").run();
     p.change_file(
         ".cargo/config",
         &format!(
@@ -1175,7 +1175,7 @@ fn replace_section() {
     Package::new("libc", "0.2.43").publish();
 
     let output = p
-        .cargo("vendor --no-merge-sources")
+        .cargo("vendor")
         .exec_with_output()
         .unwrap();
     p.change_file(".cargo/config", &String::from_utf8(output.stdout).unwrap());
@@ -1203,7 +1203,7 @@ fn switch_merged_source() {
 
     // Start with multi sources
     let output = p
-        .cargo("vendor --no-merge-sources")
+        .cargo("vendor")
         .exec_with_output()
         .unwrap();
     assert!(p.root().join("vendor/.sources").exists());
@@ -1211,13 +1211,13 @@ fn switch_merged_source() {
     p.cargo("check").run();
 
     // Switch to merged source
-    let output = p.cargo("vendor").exec_with_output().unwrap();
+    let output = p.cargo("vendor --merge-sources").exec_with_output().unwrap();
     p.change_file(".cargo/config", &String::from_utf8(output.stdout).unwrap());
     p.cargo("check").run();
 
     // Switch back to multi sources
     let output = p
-        .cargo("vendor --no-merge-sources")
+        .cargo("vendor")
         .exec_with_output()
         .unwrap();
     p.change_file(".cargo/config", &String::from_utf8(output.stdout).unwrap());

@@ -25,7 +25,7 @@ pub struct VendorOptions<'a> {
     pub versioned_dirs: bool,
     pub destination: &'a Path,
     pub extra: Vec<PathBuf>,
-    pub no_merge_sources: bool,
+    pub merge_sources: bool,
 }
 
 pub fn vendor(ws: &Workspace<'_>, opts: &VendorOptions<'_>) -> CargoResult<()> {
@@ -93,7 +93,7 @@ fn sync(
     let canonical_destination = try_canonicalize(opts.destination);
     let canonical_destination = canonical_destination.as_deref().unwrap_or(opts.destination);
     let dest_dir_already_exists = canonical_destination.exists();
-    let merge_sources = !opts.no_merge_sources;
+    let merge_sources = opts.merge_sources;
     let sources_file = canonical_destination.join(SOURCES_FILE_NAME);
 
     paths::create_dir_all(&canonical_destination)?;
